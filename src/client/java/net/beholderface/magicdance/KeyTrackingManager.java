@@ -1,7 +1,10 @@
 package net.beholderface.magicdance;
 
 import com.google.common.base.Joiner;
+import net.beholderface.magicdance.network.IMessage;
+import net.beholderface.magicdance.network.StepReportPacket;
 import net.beholderface.magicdance.registry.MagicDanceItemRegistry;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.option.KeyBinding;
@@ -17,6 +20,7 @@ public class KeyTrackingManager {
     private static final HashSet<KeyData> KEY_DATA = new HashSet<>();
     private static final List<Character> SEQUENCE = new ArrayList<>();
     private static final Map<KeyBinding, Character> BINDING_TO_CHAR = new HashMap<>();
+    private static long firstInput = -2;
     private static long lastInput = -1;
     public static void init(){
         if (!KEY_DATA.isEmpty()){
@@ -50,18 +54,28 @@ public class KeyTrackingManager {
                         data.press(world);
                         if (active){
                             SEQUENCE.add(BINDING_TO_CHAR.get(data.binding));
+                            if (firstInput == -2){
+                                firstInput = time;
+                            }
                         }
                         lastInput = time;
-                        MagicDance.LOGGER.info("Key " + GLFW.glfwGetKeyName(code, GLFW.glfwGetKeyScancode(code)) + " pressed");
+                        //MagicDance.LOGGER.info("Key " + GLFW.glfwGetKeyName(code, GLFW.glfwGetKeyScancode(code)) + " pressed");
                     } else {
                         data.release(world);
-                        MagicDance.LOGGER.info("Key " + GLFW.glfwGetKeyName(code, GLFW.glfwGetKeyScancode(code)) + " released");
+                        //MagicDance.LOGGER.info("Key " + GLFW.glfwGetKeyName(code, GLFW.glfwGetKeyScancode(code)) + " released");
                     }
                 }
             }
             if ((time - lastInput >= 60 || !active) && !SEQUENCE.isEmpty()){
-                MagicDance.LOGGER.info(Joiner.on("").join(SEQUENCE));
+                String sequence = Joiner.on("").join(SEQUENCE);
+                long duration = lastInput - firstInput;
+                MagicDance.LOGGER.info("Sending packet with string " + sequence + " and duration " + duration);
+                IMessage packet = new StepReportPacket(sequence, duration);
+                ClientPlayNetworking.send(packet.getFabricId(), packet.toBuf());
+                MagicDance.LOGGER.info(sequence);
                 SEQUENCE.clear();
+                firstInput = -2;
+                lastInput = -1;
             }
         }
     }

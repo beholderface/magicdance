@@ -1,7 +1,7 @@
 package net.beholderface.magicdance;
 
+import net.beholderface.magicdance.network.C2SPacketRegister;
 import net.beholderface.magicdance.registry.MagicDanceItemRegistry;
-import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 
 import org.slf4j.Logger;
@@ -22,6 +22,6 @@ public class MagicDance implements ModInitializer {
 		// Proceed with mild caution.
 		LOGGER.info("What kind of magic spell to use?");
 		MagicDanceItemRegistry.init();
-		
+		C2SPacketRegister.init();
 	}
 }

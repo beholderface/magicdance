@@ -1,7 +1,9 @@
 package net.beholderface.magicdance;
 
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.world.ClientWorld;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,8 +19,14 @@ public class KeyData {
     public void press(@NotNull ClientWorld world){
         lastPressed = world.getTime();
     }
+    public long pressed(){
+        return lastPressed;
+    }
     public void release(@NotNull ClientWorld world){
         lastReleased = world.getTime();
+    }
+    public long released(){
+        return lastReleased;
     }
     public boolean isPressed(){
         return lastReleased < lastPressed;
